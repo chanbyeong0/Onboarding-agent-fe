@@ -1,0 +1,26 @@
+.ui-card {
+  position: relative;
+  overflow: hidden;
+  padding: 22px;
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  backdrop-filter: blur(22px);
+}
+
+.ui-card::before {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  content: "";
+  background: linear-gradient(135deg, rgba(157, 255, 63, 0.1), transparent 34%);
+}
+
+.ui-card > * {
+  position: relative;
+}
+
+.ui-card--strong {
+  background: var(--panel-strong);
+}
