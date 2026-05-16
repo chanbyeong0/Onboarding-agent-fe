@@ -1,5 +1,5 @@
-import { apiRequest } from '../../../lib/apiClient'
-import type { DocumentItem, DocumentListResponse } from '../types'
+import { apiRequest, buildApiUrl } from '../../../lib/apiClient'
+import type { DocumentItem, DocumentListResponse, DocumentPage, DocumentPageListResponse } from '../types'
 
 export function uploadDocument(file: File): Promise<DocumentItem> {
   const formData = new FormData()
@@ -23,4 +23,20 @@ export async function listDocuments(): Promise<DocumentItem[]> {
 export function getDocument(documentId: string): Promise<DocumentItem> {
   // 선택한 문서 ID로 문서 상세 메타데이터를 조회한다
   return apiRequest<DocumentItem>(`/api/v1/documents/${documentId}`)
+}
+
+export async function listDocumentPages(documentId: string): Promise<DocumentPage[]> {
+  // 문서의 페이지 이미지 URL과 텍스트를 페이지 번호순으로 조회한다
+  const response = await apiRequest<DocumentPageListResponse>(`/api/v1/documents/${documentId}/pages`)
+  return response.pages
+}
+
+export function buildDocumentPageImageUrl(imageUrl: string): string {
+  // 페이지 이미지 URL도 프론트 nginx 프록시를 거치도록 같은 API base를 사용한다
+  return buildApiUrl(imageUrl)
+}
+
+export function buildDocumentViewerPdfUrl(viewerPdfUrl: string): string {
+  // PDF 원본 뷰어도 프론트 nginx 프록시를 거쳐 같은 origin에서 로드한다
+  return buildApiUrl(viewerPdfUrl)
 }

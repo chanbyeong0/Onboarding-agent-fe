@@ -13,3 +13,8 @@ export function listMyCheckpoints(): Promise<Checkpoint[]> {
   // 현재 로그인 사용자의 체크포인트 목록을 조회한다
   return apiRequest<Checkpoint[]>('/api/v1/checkpoints/me')
 }
+
+export function listMySessionCheckpoints(sessionId: string): Promise<Checkpoint[]> {
+  // 강의 세션 안에서 저장한 체크포인트만 조회한다
+  return apiRequest<Checkpoint[]>(`/api/v1/checkpoints/sessions/${sessionId}/me`)
+}

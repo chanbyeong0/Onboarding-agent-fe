@@ -1,6 +1,8 @@
 import { useEffect, type ReactNode } from 'react'
 import { Navigate, Route, Routes } from 'react-router-dom'
+import AdminPage from './pages/AdminPage'
 import DashboardPage from './pages/DashboardPage'
+import LectureSessionPage from './pages/LectureSessionPage'
 import LoginPage from './pages/LoginPage'
 import RegisterPage from './pages/RegisterPage'
 import { useAuthStore } from './stores/authStore'
@@ -20,6 +22,21 @@ function ProtectedRoute({ children }: { children: ReactNode }) {
   return children
 }
 
+function AdminRoute({ children }: { children: ReactNode }) {
+  const user = useAuthStore((state) => state.user)
+
+  if (user?.role !== 'admin') {
+    return <Navigate to="/dashboard" replace />
+  }
+
+  return children
+}
+
+function HomeRedirect() {
+  const user = useAuthStore((state) => state.user)
+  return <Navigate to={user?.role === 'admin' ? '/admin' : '/dashboard'} replace />
+}
+
 export default function App() {
   const hydrateFromStorage = useAuthStore((state) => state.hydrateFromStorage)
 
@@ -36,7 +53,33 @@ export default function App() {
         path="/"
         element={
           <ProtectedRoute>
+            <HomeRedirect />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/admin"
+        element={
+          <ProtectedRoute>
+            <AdminRoute>
+              <AdminPage />
+            </AdminRoute>
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/dashboard"
+        element={
+          <ProtectedRoute>
             <DashboardPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/sessions/:sessionId"
+        element={
+          <ProtectedRoute>
+            <LectureSessionPage />
           </ProtectedRoute>
         }
       />

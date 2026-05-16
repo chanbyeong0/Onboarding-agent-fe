@@ -16,6 +16,7 @@
     "react": "latest",
     "react-dom": "latest",
     "react-router-dom": "latest",
+    "pdfjs-dist": "latest",
     "zustand": "latest"
   },
   "devDependencies": {

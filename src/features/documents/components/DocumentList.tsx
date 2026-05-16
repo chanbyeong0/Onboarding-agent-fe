@@ -27,7 +27,7 @@ export default function DocumentList({ documents, selectedDocumentId, onSelect }
                 padding: '14px',
                 color: 'var(--text)',
                 textAlign: 'left',
-                background: selectedDocumentId === document.id ? 'rgba(157,255,63,0.16)' : 'rgba(255,255,255,0.05)',
+                background: selectedDocumentId === document.id ? 'rgba(37,99,235,0.08)' : '#ffffff',
                 border: '1px solid var(--line)',
                 borderRadius: '16px',
                 cursor: 'pointer',

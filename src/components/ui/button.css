@@ -20,7 +20,7 @@
 }
 
 .ui-button:focus-visible {
-  outline: 3px solid rgba(157, 255, 63, 0.42);
+  outline: 3px solid rgba(96, 165, 250, 0.42);
   outline-offset: 3px;
 }
 
@@ -30,14 +30,14 @@
 }
 
 .ui-button--primary {
-  color: #07100d;
+  color: #ffffff;
   background: linear-gradient(135deg, var(--accent), var(--accent-2));
-  box-shadow: 0 14px 34px rgba(157, 255, 63, 0.22);
+  box-shadow: 0 14px 28px rgba(37, 99, 235, 0.24);
 }
 
 .ui-button--secondary {
-  color: var(--text);
-  background: rgba(255, 255, 255, 0.08);
+  color: var(--accent);
+  background: #ffffff;
   border-color: var(--line);
 }
 

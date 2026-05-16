@@ -1,19 +1,19 @@
 import { FormEvent, useMemo, useState } from 'react'
 import Button from '../../../components/ui/Button'
 import Card from '../../../components/ui/Card'
-import Input from '../../../components/ui/Input'
 import type { Checkpoint } from '../../checkpoints/types'
 import type { DocumentItem } from '../../documents/types'
 import { useStreamingChat } from '../hooks/useStreamingChat'
 
 type ChatPanelProps = {
+  sessionId?: string | null
   selectedDocument: DocumentItem | null
+  currentPageNumber?: number | null
   checkpoints: Checkpoint[]
 }
 
-export default function ChatPanel({ selectedDocument, checkpoints }: ChatPanelProps) {
+export default function ChatPanel({ sessionId = null, selectedDocument, currentPageNumber = null, checkpoints }: ChatPanelProps) {
   const [message, setMessage] = useState('')
-  const [pageNumber, setPageNumber] = useState('')
   const { text, isStreaming, error, start, abort } = useStreamingChat()
 
   const checkpointTexts = useMemo(() => checkpoints.map((checkpoint) => checkpoint.content), [checkpoints])
@@ -27,8 +27,9 @@ export default function ChatPanel({ selectedDocument, checkpoints }: ChatPanelPr
     // 선택 문서와 체크포인트를 함께 담아 SSE 채팅 요청을 시작한다
     await start({
       message,
+      session_id: sessionId,
       document_id: selectedDocument.id,
-      page_number: pageNumber ? Number(pageNumber) : null,
+      page_number: currentPageNumber,
       checkpoints: checkpointTexts,
     })
   }
@@ -41,9 +42,8 @@ export default function ChatPanel({ selectedDocument, checkpoints }: ChatPanelPr
         <p className="muted">{selectedDocument ? `${selectedDocument.title} 기준으로 답변합니다.` : '먼저 문서를 선택하세요.'}</p>
       </div>
       <form className="form-grid" onSubmit={handleSubmit}>
-        <Input label="페이지 번호(선택)" value={pageNumber} onChange={(event) => setPageNumber(event.target.value)} />
         <label className="ui-input-wrap">
-          <span>질문</span>
+          <span>{currentPageNumber ? `${currentPageNumber}페이지 질문` : '질문'}</span>
           <textarea
             value={message}
             onChange={(event) => setMessage(event.target.value)}
@@ -52,7 +52,7 @@ export default function ChatPanel({ selectedDocument, checkpoints }: ChatPanelPr
               width: '100%',
               padding: '14px',
               color: 'var(--text)',
-              background: 'rgba(255,255,255,0.06)',
+              background: '#ffffff',
               border: '1px solid var(--line)',
               borderRadius: '14px',
               resize: 'vertical',
@@ -76,7 +76,7 @@ export default function ChatPanel({ selectedDocument, checkpoints }: ChatPanelPr
           minHeight: 160,
           padding: 16,
           whiteSpace: 'pre-wrap',
-          background: 'rgba(0,0,0,0.24)',
+          background: '#f8fbff',
           border: '1px solid var(--line)',
           borderRadius: 18,
         }}

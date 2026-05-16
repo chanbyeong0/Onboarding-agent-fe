@@ -1,7 +1,9 @@
 export type ChatRequest = {
   message: string
-  document_id: string
+  session_id?: string | null
+  document_id?: string | null
   page_number: number | null
+  mode?: 'question' | 'explain_page'
   checkpoints: string[]
 }
 

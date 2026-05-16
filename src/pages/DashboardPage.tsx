@@ -1,66 +1,35 @@
-import { useCallback, useEffect, useState } from 'react'
+import { useEffect, useState } from 'react'
+import { Link } from 'react-router-dom'
 import Button from '../components/ui/Button'
 import Card from '../components/ui/Card'
-import { useCheckpoints } from '../features/checkpoints/hooks/useCheckpoints'
-import ChatPanel from '../features/chat/components/ChatPanel'
-import DocumentList from '../features/documents/components/DocumentList'
-import DocumentUploader from '../features/documents/components/DocumentUploader'
-import { listDocuments } from '../features/documents/api/documentApi'
-import type { DocumentItem } from '../features/documents/types'
+import { getLearningSummary } from '../features/lectureSessions/api/lectureSessionApi'
+import type { LearningSummary } from '../features/lectureSessions/types'
 import { useAuthStore } from '../stores/authStore'
 
 export default function DashboardPage() {
   const user = useAuthStore((state) => state.user)
   const logout = useAuthStore((state) => state.logout)
-  const { checkpoints, addCheckpoint, error: checkpointError } = useCheckpoints()
-  const [documents, setDocuments] = useState<DocumentItem[]>([])
-  const [selectedDocument, setSelectedDocument] = useState<DocumentItem | null>(null)
-  const [checkpointContent, setCheckpointContent] = useState('')
-  const [checkpointPage, setCheckpointPage] = useState('')
+  const [summary, setSummary] = useState<LearningSummary | null>(null)
   const [error, setError] = useState<string | null>(null)
 
-  const loadDocuments = useCallback(async () => {
+  async function loadSummary() {
     try {
-      // 백엔드 문서 목록 API에서 업로드된 문서들을 조회한다
-      const items = await listDocuments()
-      setDocuments(items)
-      setSelectedDocument((current) => current ?? items[0] ?? null)
+      setSummary(await getLearningSummary())
     } catch (err) {
-      setError(err instanceof Error ? err.message : '문서 목록을 불러오지 못했습니다.')
-    }
-  }, [])
-
-  async function handleAddCheckpoint() {
-    if (!selectedDocument || !checkpointContent.trim()) {
-      return
-    }
-
-    // 선택된 문서 기준으로 사용자가 모르는 항목을 체크포인트로 저장한다
-    const created = await addCheckpoint({
-      document_id: selectedDocument.id,
-      page_number: checkpointPage ? Number(checkpointPage) : null,
-      content: checkpointContent,
-    })
-    if (created) {
-      setCheckpointContent('')
-      setCheckpointPage('')
+      setError(err instanceof Error ? err.message : '학습 현황을 불러오지 못했습니다.')
     }
   }
 
   useEffect(() => {
-    // 대시보드 진입 시 등록 문서 목록을 초기 로딩한다
-    void loadDocuments()
-  }, [loadDocuments])
+    void loadSummary()
+  }, [])
 
   return (
     <main className="page-shell">
-      <header style={{ display: 'flex', justifyContent: 'space-between', gap: 24, alignItems: 'flex-start' }}>
+      <header className="topbar">
         <div>
-          <p className="eyebrow">Onboarding AI Agent</p>
-          <h1 className="title">Industrial Onboarding Cockpit</h1>
-          <p className="subtitle">
-            문서를 임무 자료로 올리고, 모르는 항목을 체크한 뒤 AI 사수에게 바로 질문하세요.
-          </p>
+          <p className="eyebrow">Dashboard</p>
+          <h1 className="title">학습 현황</h1>
         </div>
         <div style={{ display: 'grid', gap: 10, justifyItems: 'end' }}>
           <span className="muted">{user?.name ?? '사용자'}님</span>
@@ -70,61 +39,50 @@ export default function DashboardPage() {
         </div>
       </header>
 
-      <section className="dashboard-grid">
-        <div className="stack">
-          <DocumentUploader
-            onUploaded={(document) => {
-              setDocuments((current) => [document, ...current])
-              setSelectedDocument(document)
-            }}
-          />
-          <DocumentList documents={documents} selectedDocumentId={selectedDocument?.id ?? null} onSelect={setSelectedDocument} />
-          {error ? <p className="error-text">{error}</p> : null}
-        </div>
+      {error ? <p className="error-text">{error}</p> : null}
 
-        <Card className="stack">
-          <div>
-            <p className="eyebrow">Unknown Items</p>
-            <h2 style={{ margin: 0 }}>미확인 항목 체크</h2>
-            <p className="muted">{selectedDocument ? selectedDocument.title : '문서를 선택하면 체크포인트를 저장할 수 있습니다.'}</p>
-          </div>
-          <input
-            className="ui-input"
-            placeholder="페이지 번호(선택)"
-            value={checkpointPage}
-            onChange={(event) => setCheckpointPage(event.target.value)}
-          />
-          <textarea
-            placeholder="모르는 항목을 입력하세요"
-            value={checkpointContent}
-            onChange={(event) => setCheckpointContent(event.target.value)}
-            rows={4}
-            style={{
-              width: '100%',
-              padding: '14px',
-              color: 'var(--text)',
-              background: 'rgba(255,255,255,0.06)',
-              border: '1px solid var(--line)',
-              borderRadius: '14px',
-              resize: 'vertical',
-            }}
-          />
-          {checkpointError ? <p className="error-text">{checkpointError}</p> : null}
-          <Button type="button" disabled={!selectedDocument} onClick={() => void handleAddCheckpoint()}>
-            체크 저장
-          </Button>
-          <div className="stack">
-            {checkpoints.map((checkpoint) => (
-              <div key={checkpoint.id} style={{ padding: 14, border: '1px solid var(--line)', borderRadius: 16 }}>
-                <strong>{checkpoint.content}</strong>
-                <br />
-                <span className="muted">page {checkpoint.page_number ?? '-'}</span>
-              </div>
-            ))}
-          </div>
+      <section className="summary-grid">
+        <Card tone="strong">
+          <p className="eyebrow">Completion</p>
+          <h2 className="metric">{summary?.completion_rate ?? 0}%</h2>
+          <p className="muted">
+            {summary?.completed_documents ?? 0}/{summary?.total_documents ?? 0}개 문서 학습 완료
+          </p>
         </Card>
+        <Card>
+          <p className="eyebrow">Checkpoints</p>
+          <h2 className="metric">{summary?.checkpoint_count ?? 0}</h2>
+          <p className="muted">강의 중 어려웠던 부분 기록</p>
+        </Card>
+        <Card>
+          <p className="eyebrow">AI Questions</p>
+          <h2 className="metric">{summary?.question_count ?? 0}</h2>
+          <p className="muted">AI 사수에게 남긴 질문</p>
+        </Card>
+      </section>
 
-        <ChatPanel selectedDocument={selectedDocument} checkpoints={checkpoints} />
+      <section className="stack" style={{ marginTop: 24 }}>
+        <div>
+          <p className="eyebrow">Sessions</p>
+          <h2 style={{ margin: 0 }}>강의</h2>
+        </div>
+        {summary?.sessions.length === 0 ? <Card className="muted">아직 준비된 강의 세션이 없습니다.</Card> : null}
+        {summary?.sessions.map((session) => (
+          <Card key={session.id} className="session-row">
+            <div>
+              <h3 style={{ margin: 0 }}>{session.title}</h3>
+              <p className="muted">{session.description || `${session.documents.length}개 문서로 구성된 강의입니다.`}</p>
+            </div>
+            <Link className="link-button" to={`/sessions/${session.id}`}>
+              강의 입장
+            </Link>
+          </Card>
+        ))}
+        <Card>
+          <p className="eyebrow">Exam</p>
+          <h3 style={{ margin: 0 }}>강의 내용 기반 시험</h3>
+          <p className="muted">체크포인트와 질문 기록을 바탕으로 시험 기능을 연결할 예정입니다.</p>
+        </Card>
       </section>
     </main>
   )
