@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
+import BrandMark from '../components/ui/BrandMark'
 import Button from '../components/ui/Button'
 import Card from '../components/ui/Card'
 import { getLearningSummary } from '../features/lectureSessions/api/lectureSessionApi'
@@ -28,6 +29,7 @@ export default function DashboardPage() {
     <main className="page-shell">
       <header className="topbar">
         <div>
+          <BrandMark compact />
           <p className="eyebrow">Dashboard</p>
           <h1 className="title">학습 현황</h1>
         </div>
@@ -73,16 +75,16 @@ export default function DashboardPage() {
               <h3 style={{ margin: 0 }}>{session.title}</h3>
               <p className="muted">{session.description || `${session.documents.length}개 문서로 구성된 강의입니다.`}</p>
             </div>
-            <Link className="link-button" to={`/sessions/${session.id}`}>
-              강의 입장
-            </Link>
+            <div className="session-actions">
+              <Link className="link-button" to={`/sessions/${session.id}`}>
+                강의 입장
+              </Link>
+              <Link className="link-button" to={`/sessions/${session.id}/exam`}>
+                시험
+              </Link>
+            </div>
           </Card>
         ))}
-        <Card>
-          <p className="eyebrow">Exam</p>
-          <h3 style={{ margin: 0 }}>강의 내용 기반 시험</h3>
-          <p className="muted">체크포인트와 질문 기록을 바탕으로 시험 기능을 연결할 예정입니다.</p>
-        </Card>
       </section>
     </main>
   )

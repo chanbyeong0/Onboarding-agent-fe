@@ -1,5 +1,6 @@
 import { FormEvent, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
+import BrandMark from '../../../components/ui/BrandMark'
 import Button from '../../../components/ui/Button'
 import Card from '../../../components/ui/Card'
 import Input from '../../../components/ui/Input'
@@ -40,6 +41,7 @@ export default function LoginForm() {
 
   return (
     <Card tone="strong" style={{ width: 'min(460px, 100%)' }}>
+      <BrandMark />
       <p className="eyebrow">Access Console</p>
       <h1 style={{ margin: 0 }}>온보딩 관제실 입장</h1>
       <p className="muted">사내 온보딩 문서와 AI 사수를 연결하려면 로그인하세요.</p>

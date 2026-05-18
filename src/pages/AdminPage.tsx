@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import BrandMark from '../components/ui/BrandMark'
 import Button from '../components/ui/Button'
 import Card from '../components/ui/Card'
 import Input from '../components/ui/Input'
@@ -75,6 +76,7 @@ export default function AdminPage() {
     <main className="page-shell">
       <header className="topbar">
         <div>
+          <BrandMark compact />
           <p className="eyebrow">Admin Console</p>
           <h1 className="title">강의 자료와 세션 준비</h1>
           <p className="subtitle">담당자는 문서를 올리고 신입이 학습할 강의 세션에 자료를 연결합니다.</p>

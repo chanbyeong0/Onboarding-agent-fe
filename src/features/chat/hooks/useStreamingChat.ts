@@ -1,5 +1,5 @@
 import { useRef, useState } from 'react'
-import { streamChat } from '../api/chatApi'
+import { requestChat } from '../api/chatApi'
 import type { ChatRequest } from '../types'
 
 export function useStreamingChat() {
@@ -13,29 +13,19 @@ export function useStreamingChat() {
     setError(null)
     setIsStreaming(true)
 
-    // 새 스트리밍 요청을 취소할 수 있도록 AbortController를 준비한다
+    // 새 요청을 취소할 수 있도록 AbortController를 준비한다
     const abortController = new AbortController()
     abortControllerRef.current = abortController
 
     try {
-      // 백엔드 SSE 스트림을 열고 이벤트 타입에 따라 UI 상태를 갱신한다
-      await streamChat(request, {
+      // 백엔드에서 단일 JSON 답변을 받은 뒤 UI 상태를 갱신한다
+      const response = await requestChat(request, {
         signal: abortController.signal,
-        onEvent: (event) => {
-          if (event.type === 'delta') {
-            setText((current) => current + event.text)
-          }
-          if (event.type === 'error') {
-            setError(event.error)
-          }
-          if (event.type === 'done') {
-            setIsStreaming(false)
-          }
-        },
       })
+      setText(response.answer)
     } catch (err) {
       if (!abortController.signal.aborted) {
-        setError(err instanceof Error ? err.message : '채팅 스트림 처리 중 오류가 발생했습니다.')
+        setError(err instanceof Error ? err.message : '채팅 응답 처리 중 오류가 발생했습니다.')
       }
     } finally {
       setIsStreaming(false)
@@ -44,7 +34,7 @@ export function useStreamingChat() {
   }
 
   function abort() {
-    // 사용자가 중지를 누르면 현재 SSE 요청을 취소한다
+    // 사용자가 중지를 누르면 현재 요청을 취소한다
     abortControllerRef.current?.abort()
     setIsStreaming(false)
   }

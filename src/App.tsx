@@ -2,6 +2,7 @@ import { useEffect, type ReactNode } from 'react'
 import { Navigate, Route, Routes } from 'react-router-dom'
 import AdminPage from './pages/AdminPage'
 import DashboardPage from './pages/DashboardPage'
+import ExamPage from './pages/ExamPage'
 import LectureSessionPage from './pages/LectureSessionPage'
 import LoginPage from './pages/LoginPage'
 import RegisterPage from './pages/RegisterPage'
@@ -80,6 +81,14 @@ export default function App() {
         element={
           <ProtectedRoute>
             <LectureSessionPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/sessions/:sessionId/exam"
+        element={
+          <ProtectedRoute>
+            <ExamPage />
           </ProtectedRoute>
         }
       />

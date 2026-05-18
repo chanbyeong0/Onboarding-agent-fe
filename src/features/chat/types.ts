@@ -7,15 +7,6 @@ export type ChatRequest = {
   checkpoints: string[]
 }
 
-export type ChatStreamEvent =
-  | {
-      type: 'delta'
-      text: string
-    }
-  | {
-      type: 'done'
-    }
-  | {
-      type: 'error'
-      error: string
-    }
+export type ChatResponse = {
+  answer: string
+}

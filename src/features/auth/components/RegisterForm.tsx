@@ -1,5 +1,6 @@
 import { FormEvent, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
+import BrandMark from '../../../components/ui/BrandMark'
 import Button from '../../../components/ui/Button'
 import Card from '../../../components/ui/Card'
 import Input from '../../../components/ui/Input'
@@ -31,6 +32,7 @@ export default function RegisterForm() {
 
   return (
     <Card tone="strong" style={{ width: 'min(460px, 100%)' }}>
+      <BrandMark />
       <p className="eyebrow">New Recruit</p>
       <h1 style={{ margin: 0 }}>온보딩 계정 생성</h1>
       <p className="muted">사내 문서를 학습하고 AI 사수에게 질문할 계정을 만듭니다.</p>

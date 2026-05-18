@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import MarkdownText from '../components/ui/MarkdownText'
 import { Link, useParams } from 'react-router-dom'
+import BrandMark from '../components/ui/BrandMark'
 import Button from '../components/ui/Button'
 import Card from '../components/ui/Card'
 import { createCheckpoint, listMySessionCheckpoints } from '../features/checkpoints/api/checkpointApi'
@@ -33,6 +34,8 @@ export default function LectureSessionPage() {
   const audioSourceRef = useRef<string | null>(null)
 
   const viewerPdfUrl = selectedDocument ? buildDocumentViewerPdfUrl(selectedDocument.viewer_pdf_url) : null
+  const totalPageCount = pageCount || pages.length || 1
+  const isLastPage = currentPageNumber >= totalPageCount
 
   async function loadSession() {
     const [sessionData, checkpointItems] = await Promise.all([getLectureSession(sessionId), listMySessionCheckpoints(sessionId)])
@@ -171,6 +174,7 @@ export default function LectureSessionPage() {
     <main className="page-shell">
       <header className="topbar">
         <div>
+          <BrandMark compact />
           <p className="eyebrow">Lecture Session</p>
           <h1 className="title">{session?.title ?? '강의 세션'}</h1>
           <p className="subtitle">{session?.description ?? '슬라이드를 넘기며 AI 사수의 설명을 확인하세요.'}</p>
@@ -209,7 +213,7 @@ export default function LectureSessionPage() {
             <p className="eyebrow">Slide</p>
             <h2 style={{ margin: 0 }}>{selectedDocument?.title ?? '문서를 선택하세요'}</h2>
             <p className="muted">
-              {selectedDocument ? `${currentPageNumber} / ${pageCount || pages.length || 1} 페이지` : '페이지를 준비 중입니다.'}
+              {selectedDocument ? `${currentPageNumber} / ${totalPageCount} 페이지` : '페이지를 준비 중입니다.'}
             </p>
           </div>
           <div className="slide-canvas">
@@ -219,22 +223,27 @@ export default function LectureSessionPage() {
               <span className="muted">표시할 PDF가 없습니다.</span>
             )}
           </div>
-          <div style={{ display: 'flex', gap: 10, justifyContent: 'space-between' }}>
+          <div className="slide-controls">
             <Button type="button" variant="secondary" disabled={currentPageNumber <= 1} onClick={() => setCurrentPageNumber((page) => page - 1)}>
               이전
             </Button>
-            <Button
-              type="button"
-              variant="secondary"
-              disabled={currentPageNumber >= (pageCount || pages.length || 1)}
-              onClick={() => setCurrentPageNumber((page) => page + 1)}
-            >
-              다음
-            </Button>
+            {isLastPage ? (
+              <Link className="link-button" to={`/sessions/${sessionId}/exam`}>
+                시험 보러가기
+              </Link>
+            ) : (
+              <Button
+                type="button"
+                variant="secondary"
+                onClick={() => setCurrentPageNumber((page) => page + 1)}
+              >
+                다음
+              </Button>
+            )}
           </div>
         </Card>
 
-        <div className="stack">
+        <div className="stack lecture-side-panel">
           <Card className="stack">
             <div>
               <p className="eyebrow">AI Explanation</p>
@@ -247,10 +256,10 @@ export default function LectureSessionPage() {
             </div>
             {audioSource ? (
               <div className="audio-player">
-                <audio ref={audioRef} controls src={audioSource} />
+                <audio ref={audioRef} controls autoPlay src={audioSource} />
                 {isAudioBlocked ? (
-                  <Button type="button" variant="secondary" onClick={() => void audioRef.current?.play()}>
-                    음성 재생
+                  <Button type="button" variant="primary" onClick={() => { setIsAudioBlocked(false); void audioRef.current?.play() }}>
+                    ▶ 음성 재생
                   </Button>
                 ) : null}
               </div>
