@@ -17,6 +17,8 @@ import {
   updateLearningProgress,
 } from '../features/lectureSessions/api/lectureSessionApi'
 import type { LectureSession } from '../features/lectureSessions/types'
+import { listPracticeTasks } from '../features/practiceTasks/api/practiceTaskApi'
+import type { PracticeTask } from '../features/practiceTasks/types'
 
 export default function LectureSessionPage() {
   const { sessionId = '' } = useParams()
@@ -34,6 +36,9 @@ export default function LectureSessionPage() {
   const [isExplanationLoading, setIsExplanationLoading] = useState(false)
   const [isAudioLoading, setIsAudioLoading] = useState(false)
   const [isAudioBlocked, setIsAudioBlocked] = useState(false)
+  const [practiceTasks, setPracticeTasks] = useState<PracticeTask[]>([])
+  const [practiceInputs, setPracticeInputs] = useState<Record<string, string>>({})
+  const [practiceResults, setPracticeResults] = useState<Record<string, 'success' | 'error'>>({})
   const [error, setError] = useState<string | null>(null)
   const audioRef = useRef<HTMLAudioElement | null>(null)
   const audioSourceRef = useRef<string | null>(null)
@@ -99,6 +104,27 @@ export default function LectureSessionPage() {
       })
       .catch((err) => setError(err instanceof Error ? err.message : '학습 진행도 저장에 실패했습니다.'))
   }, [selectedDocument, currentPageNumber, knownTotalPageCount, sessionId])
+
+  useEffect(() => {
+    if (!selectedDocument) {
+      setPracticeTasks([])
+      setPracticeInputs({})
+      setPracticeResults({})
+      return
+    }
+
+    void listPracticeTasks(sessionId, {
+      documentId: selectedDocument.id,
+      pageNumber: currentPageNumber,
+      status: 'approved',
+    })
+      .then((tasks) => {
+        setPracticeTasks(tasks)
+        setPracticeInputs({})
+        setPracticeResults({})
+      })
+      .catch((err) => setError(err instanceof Error ? err.message : '실습 과제를 불러오지 못했습니다.'))
+  }, [selectedDocument, currentPageNumber, sessionId])
 
   useEffect(() => {
     if (!selectedDocument) {
@@ -206,6 +232,27 @@ export default function LectureSessionPage() {
     }
   }
 
+  function normalizeCommand(command: string) {
+    return command.trim().replace(/\s+/g, ' ')
+  }
+
+  function updatePracticeInput(taskId: string, value: string) {
+    setPracticeInputs((current) => ({ ...current, [taskId]: value }))
+    setPracticeResults((current) => {
+      const { [taskId]: _removed, ...rest } = current
+      return rest
+    })
+  }
+
+  function runPracticeTask(task: PracticeTask) {
+    const userCommand = normalizeCommand(practiceInputs[task.id] ?? '')
+    const expectedCommand = normalizeCommand(task.command)
+    setPracticeResults((current) => ({
+      ...current,
+      [task.id]: userCommand && userCommand === expectedCommand ? 'success' : 'error',
+    }))
+  }
+
   return (
     <main className="page-shell">
       <header className="topbar">
@@ -303,6 +350,51 @@ export default function LectureSessionPage() {
               <p className="muted">{isExplanationLoading || isAudioLoading ? '음성 준비 중입니다.' : '음성 파일이 아직 없습니다.'}</p>
             )}
           </Card>
+
+          {practiceTasks.length > 0 ? (
+            <Card className="stack">
+              <div>
+                <p className="eyebrow">Practice</p>
+                <h2 style={{ margin: 0 }}>페이지 실습</h2>
+                <p className="muted">실제 서버 명령 실행 없이 터미널 실행 흐름을 연습하는 시뮬레이션입니다.</p>
+              </div>
+              {practiceTasks.map((task) => {
+                const result = practiceResults[task.id]
+                const output = task.expected_output || '명령이 정상적으로 실행된 것으로 가정합니다.'
+
+                return (
+                  <div key={task.id} className="practice-terminal-cell">
+                    <div className="practice-terminal-header">
+                      <strong>{task.title}</strong>
+                    </div>
+                    {task.instruction ? <p className="practice-task-instruction">{task.instruction}</p> : null}
+                    <div className="practice-terminal">
+                      <div className="practice-terminal-line">
+                        <span className="practice-terminal-prompt">$</span>
+                        <input
+                          className="practice-terminal-input"
+                          placeholder="명령어를 입력하세요"
+                          value={practiceInputs[task.id] ?? ''}
+                          onChange={(event) => updatePracticeInput(task.id, event.target.value)}
+                          onKeyDown={(event) => {
+                            if (event.key === 'Enter') {
+                              runPracticeTask(task)
+                            }
+                          }}
+                        />
+                      </div>
+                      {result === 'success' ? <pre>{output}</pre> : null}
+                      {result === 'error' ? <pre>{task.hint ? `힌트: ${task.hint}` : '입력한 명령어가 예상 명령어와 다릅니다. 다시 입력해보세요.'}</pre> : null}
+                    </div>
+                    <Button type="button" variant="secondary" onClick={() => runPracticeTask(task)}>
+                      실행
+                    </Button>
+                    {task.safety_note ? <span className="muted">주의: {task.safety_note}</span> : null}
+                  </div>
+                )
+              })}
+            </Card>
+          ) : null}
 
           <Card className="stack">
           <div>
