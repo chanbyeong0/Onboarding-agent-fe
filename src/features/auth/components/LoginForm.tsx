@@ -31,7 +31,7 @@ export default function LoginForm() {
       // 토큰 저장 직후 현재 사용자 정보를 조회해 화면 상태를 채운다
       const user = await getMe()
       setUser(user)
-      navigate('/')
+      navigate('/welcome')
     } catch (err) {
       setError(err instanceof Error ? err.message : '로그인에 실패했습니다.')
     } finally {

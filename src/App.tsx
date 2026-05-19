@@ -6,6 +6,7 @@ import ExamPage from './pages/ExamPage'
 import LectureSessionPage from './pages/LectureSessionPage'
 import LoginPage from './pages/LoginPage'
 import RegisterPage from './pages/RegisterPage'
+import WelcomePage from './pages/WelcomePage'
 import { useAuthStore } from './stores/authStore'
 
 function ProtectedRoute({ children }: { children: ReactNode }) {
@@ -55,6 +56,14 @@ export default function App() {
         element={
           <ProtectedRoute>
             <HomeRedirect />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/welcome"
+        element={
+          <ProtectedRoute>
+            <WelcomePage />
           </ProtectedRoute>
         }
       />
