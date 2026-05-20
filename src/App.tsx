@@ -5,8 +5,10 @@ import DashboardPage from './pages/DashboardPage'
 import ExamPage from './pages/ExamPage'
 import LectureSessionPage from './pages/LectureSessionPage'
 import LoginPage from './pages/LoginPage'
+import OfficeHomePage from './pages/OfficeHomePage'
 import RegisterPage from './pages/RegisterPage'
 import WelcomePage from './pages/WelcomePage'
+import WeeklyWorkshopPage from './pages/WeeklyWorkshopPage'
 import { useAuthStore } from './stores/authStore'
 
 function ProtectedRoute({ children }: { children: ReactNode }) {
@@ -36,7 +38,7 @@ function AdminRoute({ children }: { children: ReactNode }) {
 
 function HomeRedirect() {
   const user = useAuthStore((state) => state.user)
-  return <Navigate to={user?.role === 'admin' ? '/admin' : '/dashboard'} replace />
+  return <Navigate to={user?.role === 'admin' ? '/admin' : '/office'} replace />
 }
 
 export default function App() {
@@ -64,6 +66,22 @@ export default function App() {
         element={
           <ProtectedRoute>
             <WelcomePage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/office"
+        element={
+          <ProtectedRoute>
+            <OfficeHomePage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/weekly-workshop"
+        element={
+          <ProtectedRoute>
+            <WeeklyWorkshopPage />
           </ProtectedRoute>
         }
       />

@@ -63,11 +63,11 @@ export default function WelcomePage() {
     audioRef.current.load()
   }
 
-  function goToDashboard() {
+  function enterOffice() {
     playbackIdRef.current += 1
     lastRequestedIndexRef.current = null
     stopCurrentAudio()
-    navigate(user?.role === 'admin' ? '/admin' : '/dashboard', { replace: true })
+    navigate('/office', { replace: true })
   }
 
   function scheduleNext(callback: () => void, delay: number) {
@@ -241,7 +241,7 @@ export default function WelcomePage() {
 
           {isFinished ? (
             <div className="welcome-actions">
-              <Button onClick={goToDashboard} type="button" variant="primary">
+              <Button onClick={enterOffice} type="button" variant="primary">
                 마고 사무실 입장하기
               </Button>
             </div>
@@ -256,7 +256,7 @@ export default function WelcomePage() {
           ) : null}
         </div>
       </section>
-      <button className="welcome-skip-button" onClick={goToDashboard} type="button">
+      <button className="welcome-skip-button" onClick={enterOffice} type="button">
         온보딩 소개 건너뛰기
       </button>
     </main>
